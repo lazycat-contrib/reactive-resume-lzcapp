@@ -1,0 +1,70 @@
+application:
+  subdomain: resume
+  multi_instance: false
+  # App ships its own account system with self-serve sign-up, so it is exposed
+  # directly instead of sitting behind the platform login gate.
+  public_path:
+    - /
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://app:3000/
+services:
+  pg:
+    image: docker.1ms.run/library/postgres:15.19
+    environment:
+      - POSTGRES_DB=resume
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD={{ stable_secret "rrx_db_pw" | replace "\r" "" | replace "\n" "" }}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    binds:
+      - /lzcapp/var/pgdata:/var/lib/postgresql
+  redis:
+    image: docker.1ms.run/library/redis:7.2.5
+    command: redis-server --appendonly yes
+    binds:
+      - /lzcapp/var/redis:/data
+  app:
+    # upstream: ghcr.io/reactive-resume/reactive-resume:v5.3.1
+    image: ghcr.1ms.run/reactive-resume/reactive-resume:v5.3.1
+    depends_on:
+      - pg
+      - redis
+    environment:
+      - PORT=3000
+      - APP_URL=https://{ .S.AppDomain }
+      - DATABASE_URL=postgresql://postgres:{{ stable_secret "rrx_db_pw" | replace "\r" "" | replace "\n" "" }}@pg:5432/resume
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SECRET={{ stable_secret "rrx_auth" | replace "\r" "" | replace "\n" "" }}
+      - ENCRYPTION_SECRET={{ stable_secret "rrx_enc" | replace "\r" "" | replace "\n" "" }}
+      - STORAGE_BACKEND=local
+      - LOCAL_STORAGE_PATH=/app/data
+      - TZ=Asia/Shanghai
+    binds:
+      - /lzcapp/var/data:/app/data
+usage: |
+  Reactive Resume 是免费开源的简历编辑器：分块编辑内容，实时预览排版，导出 PDF。
+
+  使用方法：
+  1. 打开应用，注册你自己的账号（本应用自带账号系统，注册后立即可用，无需邮件验证）。
+  2. 新建简历，在左侧列表添加内容块，右侧实时预览。
+  3. 用导出按钮把简历打印成 PDF。
+
+  数据与安全：
+  - 简历数据保存在 PostgreSQL（/lzcapp/var/pgdata），上传的图片保存在本地存储（/lzcapp/var/data），卸载应用会一并删除，请定期备份。
+  - 会话密钥与加密密钥由平台稳定密钥生成，每个部署不同，不写成固定值。
+  - 未配置邮件服务，找回密码等依赖邮件的功能不可用；注册与登录本身不依赖邮件。
+  - 应用自带登录鉴权，直接对外开放。
+
+  说明：
+  - 本应用包含三个容器（应用本体 + PostgreSQL + Redis）。
+  - 第三方社交登录（Google/GitHub 等）未配置，如需使用要自行申请凭据。
+  - 未做实机验证：注册登录、简历编辑、实时预览与 PDF 导出均未在设备上实测。

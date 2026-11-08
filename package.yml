@@ -1,0 +1,18 @@
+package: community.lazycat.app.reactive-resume
+name: Reactive Resume
+version: 5.3.1
+description: "A free and open-source resume builder that keeps your data in your hands."
+min_os_version: "1.5.0"
+homepage: https://github.com/AmruthPillai/Reactive-Resume
+author: AmruthPillai
+license: MIT
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Reactive Resume
+    description: "免费开源的简历编辑器：分块编辑、实时预览、导出 PDF。"
+  en:
+    name: Reactive Resume
+    description: "A free and open-source resume builder that keeps your data in your hands."
