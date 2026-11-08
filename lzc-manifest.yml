@@ -33,8 +33,8 @@ services:
     binds:
       - /lzcapp/var/redis:/data
   app:
-    # upstream: ghcr.io/reactive-resume/reactive-resume:v5.3.1
-    image: ghcr.1ms.run/reactive-resume/reactive-resume:v5.3.1
+    # upstream: ghcr.io/reactive-resume/reactive-resume:v6.1.0
+    image: ghcr.1ms.run/reactive-resume/reactive-resume:v6.1.0
     depends_on:
       - pg
       - redis

@@ -1,6 +1,6 @@
 package: community.lazycat.app.reactive-resume
 name: Reactive Resume
-version: 5.3.1
+version: 6.1.0
 description: "A free and open-source resume builder that keeps your data in your hands."
 min_os_version: "1.5.0"
 homepage: https://github.com/AmruthPillai/Reactive-Resume
